@@ -1,19 +1,26 @@
 package com.example.playlistmaker.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -23,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,13 +39,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.unit.sp
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.ui.alltracks.TrackListItem
@@ -49,104 +60,161 @@ import com.example.playlistmaker.ui.theme.PlaylistMakerTheme
 fun SearchScreen(
     innerPadding: PaddingValues,
     viewModel: SearchViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onTrackClick: (Track) -> Unit = {}
 ) {
     val screenState by viewModel.searchScreenState.collectAsState()
+    val historyList by viewModel.historyList.collectAsState()
     var text by rememberSaveable { mutableStateOf("") }
-    val performSearch = {
-        viewModel.search(text.trim())
+    var isFocused by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+
+    LaunchedEffect(text) {
+        viewModel.updateQuery(text)
+    }
+
+    LaunchedEffect(screenState) {
+        if (screenState is SearchState.Success) {
+            focusManager.clearFocus()
+        }
     }
 
     Column(
         modifier = Modifier
             .padding(innerPadding)
-            .padding(top = 24.dp, start = 16.dp, end = 16.dp)
             .fillMaxSize()
+            .padding(top = 8.dp)
     ) {
         ScreenHeader(
             title = stringResource(R.string.search_title),
             onBackClick = onBackClick
         )
 
-        OutlinedTextField(
-            value = text,
-            onValueChange = { text = it },
-            leadingIcon = {
-                Icon(
-                    modifier = Modifier.clickable { performSearch() },
-                    imageVector = Icons.Filled.Search,
-                    contentDescription = stringResource(R.string.search_icon_content_description)
-                )
-            },
-            trailingIcon = {
-                if (text.isNotEmpty()) {
-                    IconButton(onClick = {
-                        text = ""
-                        viewModel.resetSearch()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = stringResource(R.string.clear_search_content_description)
-                        )
-                    }
-                }
-            },
-            placeholder = {
-                Text(text = stringResource(R.string.search_placeholder))
-            },
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(
-                onSearch = { performSearch() },
-                onDone = { performSearch() }
+                .padding(top = 4.dp, start = 8.dp, end = 8.dp)
+        ) {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { newText -> text = newText },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { focusState -> isFocused = focusState.isFocused },
+                placeholder = {
+                    Text(stringResource(R.string.search_placeholder))
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = stringResource(R.string.search_icon_content_description)
+                    )
+                },
+                trailingIcon = {
+                    if (text.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                text = ""
+                                viewModel.clearSearch()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = stringResource(R.string.clear_search_content_description)
+                            )
+                        }
+                    }
+                },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text
+                )
             )
-        )
 
-        when (val state = screenState) {
-            SearchState.Initial -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = stringResource(R.string.search_prompt))
-                }
+            if (isFocused && text.isEmpty() && historyList.isNotEmpty()) {
+                HistoryRequests(
+                    historyList = historyList,
+                    onClick = { word ->
+                        text = word
+                    }
+                )
             }
 
-            SearchState.Searching -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            is SearchState.Success -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(state.list) { track ->
-                        TrackListItem(track = track)
-                        HorizontalDivider(thickness = 0.5.dp)
+            when (val state = screenState) {
+                SearchState.Initial -> {
+                    if (text.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(stringResource(R.string.search_prompt))
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
                 }
-            }
 
-            is SearchState.Fail -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.search_error, state.error),
-                        color = Color.Red
-                    )
+                SearchState.Searching -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                is SearchState.Success -> {
+                    if (state.list.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(R.string.search_no_songs_found),
+                                color = Color.Red
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(top = 16.dp)
+                        ) {
+                            items(state.list) { track ->
+                                TrackListItem(
+                                    track = track,
+                                    onClick = { onTrackClick(track) }
+                                )
+                                HorizontalDivider(thickness = 0.5.dp)
+                            }
+                        }
+                    }
+                }
+
+                is SearchState.Fail -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = stringResource(R.string.search_error_title),
+                                color = Color.Red
+                            )
+                            Text(
+                                text = state.error,
+                                color = Color.Red,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -159,19 +227,58 @@ internal fun ScreenHeader(
     onBackClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.LightGray.copy(alpha = 0.7f))
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = onBackClick) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.back_button_content_description)
-            )
-        }
+        Icon(
+            modifier = Modifier
+                .size(32.dp)
+                .clickable { onBackClick() },
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = stringResource(R.string.back_button_content_description)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = title,
-            style = MaterialTheme.typography.headlineSmall
+            fontSize = 32.sp
         )
+    }
+}
+
+@Composable
+private fun HistoryRequests(
+    historyList: List<String>,
+    onClick: (String) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 200.dp)
+            .padding(top = 8.dp)
+    ) {
+        items(historyList) { word ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onClick(word) }
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.History,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = word)
+            }
+            if (word != historyList.last()) {
+                HorizontalDivider(thickness = 0.5.dp)
+            }
+        }
     }
 }
 
@@ -188,9 +295,9 @@ private fun SearchScreenPreview() {
 
     PlaylistMakerTheme {
         Column {
-            ScreenHeader(
-                title = "Поиск",
-                onBackClick = {}
+            Text(
+                text = "Поиск",
+                style = MaterialTheme.typography.headlineSmall
             )
             TrackListItem(track = sampleTrack)
         }

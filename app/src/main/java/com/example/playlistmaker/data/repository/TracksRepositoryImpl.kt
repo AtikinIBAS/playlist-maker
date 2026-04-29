@@ -23,14 +23,18 @@ class TracksRepositoryImpl(
         delay(1000)
 
         return if (response.resultCode == 200) {
-            (response as TracksSearchResponse).results.map {
+            (response as TracksSearchResponse).results.mapIndexed { index, it ->
                 val seconds = it.trackTimeMillis / 1000
                 val minutes = seconds / 60
                 val trackTime = "%02d:%02d".format(minutes, seconds - minutes * 60)
                 Track(
+                    id = (index + 1).toLong(),
                     trackName = it.trackName,
                     artistName = it.artistName,
-                    trackTime = trackTime
+                    trackTime = trackTime,
+                    image = "",
+                    favorite = false,
+                    playlistId = 0
                 )
             }
         } else {
