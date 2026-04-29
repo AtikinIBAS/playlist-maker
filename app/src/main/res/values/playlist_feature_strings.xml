@@ -1,0 +1,17 @@
+<resources>
+    <string name="songs_title">Songs</string>
+    <string name="playlists_title">Playlists</string>
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_empty">Избранных треков пока нет</string>
+    <string name="new_playlist_title">Новый плейлист</string>
+    <string name="new_playlist_name">Название плейлиста</string>
+    <string name="new_playlist_description">Описание плейлиста</string>
+    <string name="save_playlist">Сохранить</string>
+    <string name="add_playlist">Добавить плейлист</string>
+    <string name="playlist_tracks_count">%1$d tracks</string>
+    <string name="track_details_title">Track details</string>
+    <string name="toggle_favorite">Добавить в избранное</string>
+    <string name="add_to_playlist">Добавить в плейлист</string>
+    <string name="playlist_details_title">Playlist details</string>
+    <string name="playlist_not_found">Плейлист не найден</string>
+</resources>

@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.playlistmaker.creator.Creator
-import com.example.playlistmaker.data.repository.SearchHistoryRepositoryImpl
 import com.example.playlistmaker.domain.repository.TracksRepository
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +24,7 @@ import kotlinx.coroutines.withContext
 class SearchViewModel(
     private val tracksRepository: TracksRepository
 ) : ViewModel() {
-    private val searchHistoryRepository = SearchHistoryRepositoryImpl(scope = viewModelScope)
+    private val searchHistoryRepository = Creator.getSearchHistoryRepository(viewModelScope)
     private val searchQuery = MutableStateFlow("")
     private val _searchScreenState = MutableStateFlow<SearchState>(SearchState.Initial)
     val searchScreenState = _searchScreenState.asStateFlow()

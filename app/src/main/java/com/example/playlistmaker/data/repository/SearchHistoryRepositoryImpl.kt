@@ -7,11 +7,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
 class SearchHistoryRepositoryImpl(
+    private val database: DatabaseMock,
     scope: CoroutineScope
 ) : SearchHistoryRepository {
     @Suppress("unused")
     private val repositoryScope = scope
-    private val database = DatabaseMock()
 
     override fun getHistoryRequests(): Flow<List<String>> {
         return database.getHistoryRequests()

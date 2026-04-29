@@ -27,8 +27,9 @@ import com.example.playlistmaker.ui.theme.PlaylistMakerTheme
 @Composable
 fun MainScreen(
     innerPadding: PaddingValues,
-    onSearchClick: () -> Unit,
-    onLibraryClick: () -> Unit,
+    onSongsClick: () -> Unit,
+    onPlaylistsClick: () -> Unit,
+    onFavoritesClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
     Column(
@@ -53,12 +54,16 @@ fun MainScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             MainMenuButton(
-                text = stringResource(R.string.search_title),
-                onClick = onSearchClick
+                text = stringResource(R.string.songs_title),
+                onClick = onSongsClick
             )
             MainMenuButton(
-                text = stringResource(R.string.media_library_title),
-                onClick = onLibraryClick
+                text = stringResource(R.string.playlists_title),
+                onClick = onPlaylistsClick
+            )
+            MainMenuButton(
+                text = stringResource(R.string.favorites_title),
+                onClick = onFavoritesClick
             )
             MainMenuButton(
                 text = stringResource(R.string.settings_title),
@@ -96,8 +101,9 @@ private fun MainScreenPreview() {
     PlaylistMakerTheme {
         MainScreen(
             innerPadding = PaddingValues(),
-            onSearchClick = {},
-            onLibraryClick = {},
+            onSongsClick = {},
+            onPlaylistsClick = {},
+            onFavoritesClick = {},
             onSettingsClick = {}
         )
     }
