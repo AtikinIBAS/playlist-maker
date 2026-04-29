@@ -5,4 +5,5 @@ import com.example.playlistmaker.domain.model.Track
 interface TracksRepository {
     fun getTrackDetails(trackId: String): String
     suspend fun getAllTracks(): List<Track>
+    suspend fun searchTracks(expression: String): List<Track>
 }

@@ -1,72 +1,40 @@
 package com.example.playlistmaker.data.repository
 
-import com.example.playlistmaker.data.network.NetworkClient
+import com.example.playlistmaker.data.dto.TracksSearchRequest
+import com.example.playlistmaker.data.dto.TracksSearchResponse
 import com.example.playlistmaker.domain.model.Track
+import com.example.playlistmaker.domain.network.NetworkClient
 import com.example.playlistmaker.domain.repository.TracksRepository
 import kotlinx.coroutines.delay
 
 class TracksRepositoryImpl(
     private val networkClient: NetworkClient
 ) : TracksRepository {
-    private val listTracks = listOf(
-        Track(
-            trackName = "Владивосток 2000",
-            artistName = "Мумий Тролль",
-            trackTime = "2:38"
-        ),
-        Track(
-            trackName = "Группа крови",
-            artistName = "Кино",
-            trackTime = "4:43"
-        ),
-        Track(
-            trackName = "Не смотри назад",
-            artistName = "Ария",
-            trackTime = "5:12"
-        ),
-        Track(
-            trackName = "Звезда по имени Солнце",
-            artistName = "Кино",
-            trackTime = "3:45"
-        ),
-        Track(
-            trackName = "Лондон",
-            artistName = "Аквариум",
-            trackTime = "4:32"
-        ),
-        Track(
-            trackName = "На заре",
-            artistName = "Альянс",
-            trackTime = "3:50"
-        ),
-        Track(
-            trackName = "Перемен",
-            artistName = "Кино",
-            trackTime = "4:56"
-        ),
-        Track(
-            trackName = "Розовый фламинго",
-            artistName = "Сплин",
-            trackTime = "3:15"
-        ),
-        Track(
-            trackName = "Танцевать",
-            artistName = "Мельница",
-            trackTime = "3:42"
-        ),
-        Track(
-            trackName = "Чёрный бумер",
-            artistName = "Серёга",
-            trackTime = "4:01"
-        )
-    )
-
     override fun getTrackDetails(trackId: String): String {
-        return networkClient.getTrackDetails(trackId)
+        return "Track details for $trackId"
     }
 
     override suspend fun getAllTracks(): List<Track> {
+        return searchTracks("")
+    }
+
+    override suspend fun searchTracks(expression: String): List<Track> {
+        val response = networkClient.doRequest(TracksSearchRequest(expression))
         delay(1000)
-        return listTracks
+
+        return if (response.resultCode == 200) {
+            (response as TracksSearchResponse).results.map {
+                val seconds = it.trackTimeMillis / 1000
+                val minutes = seconds / 60
+                val trackTime = "%02d:%02d".format(minutes, seconds - minutes * 60)
+                Track(
+                    trackName = it.trackName,
+                    artistName = it.artistName,
+                    trackTime = trackTime
+                )
+            }
+        } else {
+            emptyList()
+        }
     }
 }
