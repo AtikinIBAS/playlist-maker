@@ -1,7 +1,6 @@
 package com.example.playlistmaker.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,19 +16,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,14 +43,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.ui.alltracks.TrackListItem
@@ -67,7 +64,7 @@ fun SearchScreen(
     onTrackClick: (Track) -> Unit = {}
 ) {
     val screenState by viewModel.searchScreenState.collectAsState()
-    val historyList by viewModel.historyList.collectAsState()
+    val historyList by viewModel.historyList.collectAsState(emptyList())
     var text by rememberSaveable { mutableStateOf("") }
     var isFocused by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
@@ -87,7 +84,7 @@ fun SearchScreen(
         modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize()
-            .padding(top = 8.dp)
+            .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
         ScreenHeader(
             title = stringResource(R.string.search_title),
@@ -97,7 +94,7 @@ fun SearchScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 4.dp, start = 8.dp, end = 8.dp)
+                .padding(top = 8.dp)
         ) {
             OutlinedTextField(
                 value = text,
@@ -132,6 +129,7 @@ fun SearchScreen(
                     }
                 },
                 singleLine = true,
+                shape = RoundedCornerShape(14.dp),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text
                 )
@@ -149,12 +147,10 @@ fun SearchScreen(
             when (val state = screenState) {
                 SearchState.Initial -> {
                     if (text.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(stringResource(R.string.search_prompt))
-                        }
+                        EmptyState(
+                            text = stringResource(R.string.search_prompt),
+                            modifier = Modifier.fillMaxSize()
+                        )
                     } else {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -184,14 +180,14 @@ fun SearchScreen(
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(top = 16.dp)
+                                .padding(top = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             items(state.list) { track ->
                                 TrackListItem(
                                     track = track,
                                     onClick = { onTrackClick(track) }
                                 )
-                                HorizontalDivider(thickness = 0.5.dp)
                             }
                         }
                     }
@@ -210,33 +206,6 @@ fun SearchScreen(
 }
 
 @Composable
-internal fun ScreenHeader(
-    title: String,
-    onBackClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.LightGray.copy(alpha = 0.7f))
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            modifier = Modifier
-                .size(32.dp)
-                .clickable { onBackClick() },
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = stringResource(R.string.back_button_content_description)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = title,
-            fontSize = 32.sp
-        )
-    }
-}
-
-@Composable
 private fun HistoryRequests(
     historyList: List<String>,
     onClick: (String) -> Unit
@@ -244,27 +213,32 @@ private fun HistoryRequests(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = 200.dp)
-            .padding(top = 8.dp)
+            .heightIn(max = 220.dp)
+            .padding(top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(historyList) { word ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onClick(word) }
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                tonalElevation = 1.dp
             ) {
-                Icon(
-                    imageVector = Icons.Filled.History,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = word)
-            }
-            if (word != historyList.last()) {
-                HorizontalDivider(thickness = 0.5.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onClick(word) }
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.History,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = word)
+                }
             }
         }
     }
@@ -288,13 +262,17 @@ private fun PlaceholderState(
             Image(
                 painter = painterResource(imageRes),
                 contentDescription = null,
-                modifier = Modifier.size(96.dp)
+                modifier = Modifier.size(88.dp)
             )
-            Text(text = message)
+            Text(
+                text = message,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             if (buttonText != null && onActionClick != null) {
-                Button(onClick = onActionClick) {
-                    Text(text = buttonText)
-                }
+                AppActionButton(
+                    text = buttonText,
+                    onClick = onActionClick
+                )
             }
         }
     }
@@ -305,8 +283,8 @@ private fun PlaceholderState(
 private fun SearchScreenPreview() {
     val sampleTrack = remember {
         Track(
-            trackName = "Владивосток 2000",
-            artistName = "Мумий Тролль",
+            trackName = "Yesterday",
+            artistName = "The Beatles",
             trackTime = "2:38"
         )
     }
@@ -314,7 +292,7 @@ private fun SearchScreenPreview() {
     PlaylistMakerTheme {
         Column {
             Text(
-                text = "Поиск",
+                text = "Search",
                 style = MaterialTheme.typography.headlineSmall
             )
             TrackListItem(track = sampleTrack)

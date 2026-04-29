@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,8 +33,8 @@ fun NewPlaylistScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         ScreenHeader(
             title = stringResource(R.string.new_playlist_title),
@@ -45,30 +45,30 @@ fun NewPlaylistScreen(
             value = playlistName,
             onValueChange = { playlistName = it },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.new_playlist_name)) }
+            label = { Text(stringResource(R.string.new_playlist_name)) },
+            singleLine = true,
+            shape = RoundedCornerShape(14.dp)
         )
 
         OutlinedTextField(
             value = playlistDescription,
             onValueChange = { playlistDescription = it },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.new_playlist_description)) }
+            label = { Text(stringResource(R.string.new_playlist_description)) },
+            minLines = 4,
+            shape = RoundedCornerShape(14.dp)
         )
 
-        Button(
-            onClick = {
-                if (playlistName.isNotBlank()) {
-                    playlistsViewModel.createNewPlayList(
-                        namePlaylist = playlistName.trim(),
-                        description = playlistDescription.trim()
-                    )
-                    navigateBack()
-                }
-            },
+        AppActionButton(
+            text = stringResource(R.string.save_playlist),
             enabled = playlistName.isNotBlank(),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(R.string.save_playlist))
-        }
+            onClick = {
+                playlistsViewModel.createNewPlayList(
+                    namePlaylist = playlistName.trim(),
+                    description = playlistDescription.trim()
+                )
+                navigateBack()
+            }
+        )
     }
 }

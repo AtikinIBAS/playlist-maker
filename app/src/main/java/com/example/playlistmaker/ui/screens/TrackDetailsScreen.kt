@@ -8,15 +8,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,7 +31,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.playlistmaker.R
-import com.example.playlistmaker.ui.screens.PlaylistListItem
 import com.example.playlistmaker.ui.track.TrackDetailsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,14 +44,14 @@ fun TrackDetailsScreen(
     )
 ) {
     val track by trackDetailsViewModel.track.collectAsState()
-    val playlists by trackDetailsViewModel.playlists.collectAsState()
+    val playlists by trackDetailsViewModel.playlists.collectAsState(emptyList())
     var showBottomSheet by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .padding(16.dp),
+            .padding(horizontal = 20.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         ScreenHeader(
@@ -59,22 +60,55 @@ fun TrackDetailsScreen(
         )
 
         track?.let { currentTrack ->
-            Text(text = currentTrack.trackName)
-            Text(text = currentTrack.artistName)
-            Text(text = currentTrack.trackTime)
-
-            IconButton(onClick = { trackDetailsViewModel.toggleFavorite() }) {
-                Icon(
-                    imageVector = if (currentTrack.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = stringResource(R.string.toggle_favorite)
-                )
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                tonalElevation = 1.dp,
+                shadowElevation = 2.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = currentTrack.trackName,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        text = currentTrack.artistName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = currentTrack.trackTime,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
-            IconButton(onClick = { showBottomSheet = true }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.PlaylistAdd,
-                    contentDescription = stringResource(R.string.add_to_playlist)
-                )
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                tonalElevation = 1.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    IconButton(onClick = { trackDetailsViewModel.toggleFavorite() }) {
+                        Icon(
+                            imageVector = if (currentTrack.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = stringResource(R.string.toggle_favorite)
+                        )
+                    }
+
+                    IconButton(onClick = { showBottomSheet = true }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.PlaylistAdd,
+                            contentDescription = stringResource(R.string.add_to_playlist)
+                        )
+                    }
+                }
             }
         }
     }
@@ -86,7 +120,8 @@ fun TrackDetailsScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(playlists) { playlist ->
                     PlaylistListItem(
@@ -96,7 +131,6 @@ fun TrackDetailsScreen(
                             showBottomSheet = false
                         }
                     )
-                    HorizontalDivider(thickness = 0.5.dp)
                 }
             }
         }

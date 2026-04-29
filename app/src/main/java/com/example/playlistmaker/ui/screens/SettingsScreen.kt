@@ -6,12 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -38,8 +33,8 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .padding(horizontal = 16.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            .padding(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         ScreenHeader(
             title = stringResource(R.string.settings_title),
@@ -47,10 +42,9 @@ fun SettingsScreen(
         )
 
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SettingsButton(
+            AppMenuRow(
                 text = stringResource(R.string.share_app_title),
                 onClick = {
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -66,7 +60,7 @@ fun SettingsScreen(
                 }
             )
 
-            SettingsButton(
+            AppMenuRow(
                 text = stringResource(R.string.contact_developers_title),
                 onClick = {
                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
@@ -79,7 +73,7 @@ fun SettingsScreen(
                 }
             )
 
-            SettingsButton(
+            AppMenuRow(
                 text = stringResource(R.string.user_agreement_title),
                 onClick = {
                     context.startActivity(
@@ -88,26 +82,6 @@ fun SettingsScreen(
                 }
             )
         }
-    }
-}
-
-@Composable
-private fun SettingsButton(
-    text: String,
-    onClick: () -> Unit
-) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        )
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleMedium
-        )
     }
 }
 

@@ -13,24 +13,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Playlist
 import com.example.playlistmaker.ui.playlist.PlaylistsViewModel
@@ -43,7 +42,7 @@ fun PlaylistsScreen(
     navigateToPlaylist: (Long) -> Unit,
     navigateBack: () -> Unit
 ) {
-    val playlists by playlistsViewModel.playlists.collectAsState()
+    val playlists by playlistsViewModel.playlists.collectAsState(emptyList())
 
     Box(
         modifier = Modifier
@@ -53,7 +52,7 @@ fun PlaylistsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
             ScreenHeader(
                 title = stringResource(R.string.playlists_title),
@@ -63,14 +62,14 @@ fun PlaylistsScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 16.dp)
+                    .padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(playlists) { playlist ->
                     PlaylistListItem(
                         playlist = playlist,
                         onClick = { navigateToPlaylist(playlist.id) }
                     )
-                    HorizontalDivider(thickness = 0.5.dp)
                 }
             }
         }
@@ -94,33 +93,42 @@ fun PlaylistListItem(
     playlist: Playlist,
     onClick: () -> Unit
 ) {
-    Row(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(14.dp),
+        tonalElevation = 1.dp,
+        shadowElevation = 2.dp
     ) {
-        Image(
-            modifier = Modifier.size(48.dp),
-            painter = painterResource(id = R.drawable.ic_music),
-            contentDescription = playlist.name,
-            colorFilter = ColorFilter.tint(Color.Gray)
-        )
-        Column(
-            modifier = Modifier.weight(1f),
-            horizontalAlignment = Alignment.Start
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = playlist.name,
-                style = MaterialTheme.typography.titleMedium
+            Image(
+                modifier = Modifier.size(48.dp),
+                painter = painterResource(id = R.drawable.ic_music),
+                contentDescription = playlist.name,
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
             )
-            Text(
-                text = stringResource(R.string.playlist_tracks_count, playlist.tracks.size),
-                fontSize = 11.sp,
-                color = Color.Gray
-            )
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = playlist.name,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = stringResource(R.string.playlist_tracks_count, playlist.tracks.size),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            ChevronMark()
         }
     }
 }

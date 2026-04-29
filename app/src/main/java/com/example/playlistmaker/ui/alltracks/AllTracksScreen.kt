@@ -46,6 +46,8 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Track
+import com.example.playlistmaker.ui.screens.ChevronMark
+import com.example.playlistmaker.ui.screens.MetaText
 import com.example.playlistmaker.ui.theme.PlaylistMakerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -162,7 +164,8 @@ fun TrackListItem(
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = { onLongClick?.invoke() }
-            ),
+            )
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -176,18 +179,16 @@ fun TrackListItem(
         ) {
             Text(
                 text = track.trackName,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.bodyLarge
+                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1
             )
-            Text(
-                text = track.artistName,
-                style = MaterialTheme.typography.bodyMedium
+            MetaText(
+                primary = track.artistName,
+                duration = track.trackTime
             )
         }
-        Text(
-            text = track.trackTime,
-            style = MaterialTheme.typography.bodyMedium
-        )
+        ChevronMark()
     }
 }
 
@@ -198,8 +199,7 @@ private fun TrackArtwork(
 ) {
     Box(
         modifier = Modifier
-            .width(60.dp)
-            .aspectRatio(2f / 3f)
+            .size(48.dp)
             .clip(RoundedCornerShape(8.dp))
     ) {
         AndroidView(

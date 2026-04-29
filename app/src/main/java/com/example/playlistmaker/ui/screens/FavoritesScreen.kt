@@ -1,13 +1,12 @@
 package com.example.playlistmaker.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,33 +25,39 @@ fun FavoritesScreen(
     navigateBack: () -> Unit,
     onTrackClick: (Track) -> Unit
 ) {
-    val favorites by playlistsViewModel.favoriteList.collectAsState()
+    val favoriteList by playlistsViewModel.favoriteList.collectAsState(emptyList())
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .padding(16.dp)
+            .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
         ScreenHeader(
             title = stringResource(R.string.favorites_title),
             onBackClick = navigateBack
         )
 
-        if (favorites.isEmpty()) {
-            Text(
+        if (favoriteList.isEmpty()) {
+            EmptyState(
                 text = stringResource(R.string.favorites_empty),
-                modifier = Modifier.padding(top = 24.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp)
             )
         } else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 16.dp)
+                    .padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(favorites) { track ->
-                    TrackListItem(track = track, onClick = { onTrackClick(track) })
-                    HorizontalDivider(thickness = 0.5.dp)
+                items(favoriteList) { track ->
+                    TrackListItem(
+                        track = track,
+                        onLongClick = { playlistsViewModel.toggleFavorite(track, false) },
+                        onClick = { onTrackClick(track) }
+                    )
                 }
             }
         }
