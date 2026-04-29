@@ -80,7 +80,10 @@ fun SearchScreen(
             },
             trailingIcon = {
                 if (text.isNotEmpty()) {
-                    IconButton(onClick = { text = "" }) {
+                    IconButton(onClick = {
+                        text = ""
+                        viewModel.resetSearch()
+                    }) {
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = stringResource(R.string.clear_search_content_description)

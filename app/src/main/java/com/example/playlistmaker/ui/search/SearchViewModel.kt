@@ -33,6 +33,10 @@ class SearchViewModel(
         }
     }
 
+    fun resetSearch() {
+        _searchScreenState.update { SearchState.Initial }
+    }
+
     companion object {
         fun getViewModelFactory(): ViewModelProvider.Factory = viewModelFactory {
             initializer {

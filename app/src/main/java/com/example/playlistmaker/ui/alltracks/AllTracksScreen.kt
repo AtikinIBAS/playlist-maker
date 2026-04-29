@@ -1,5 +1,6 @@
 package com.example.playlistmaker.ui.alltracks
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -82,9 +83,14 @@ fun AllTracksScreen(
 }
 
 @Composable
-fun TrackListItem(track: Track) {
+fun TrackListItem(
+    track: Track,
+    onClick: () -> Unit = {}
+) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
