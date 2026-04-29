@@ -57,8 +57,11 @@ class Storage {
     )
 
     fun search(request: String): List<TrackDto> {
+        val normalizedRequest = request.lowercase()
+
         return listTracks.filter {
-            it.trackName.lowercase().contains(request.lowercase())
+            it.trackName.lowercase().contains(normalizedRequest) ||
+                it.artistName.lowercase().contains(normalizedRequest)
         }
     }
 }

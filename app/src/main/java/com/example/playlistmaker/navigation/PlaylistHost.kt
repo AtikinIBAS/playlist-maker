@@ -4,11 +4,13 @@ import android.content.Intent
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.playlistmaker.ui.alltracks.AllTracksActivity
+import com.example.playlistmaker.ui.search.SearchViewModel
 import com.example.playlistmaker.ui.screens.MainScreen
 import com.example.playlistmaker.ui.screens.SearchScreen
 import com.example.playlistmaker.ui.screens.SettingsScreen
@@ -36,8 +38,13 @@ fun PlaylistHost(
         }
 
         composable(PlaylistScreen.SEARCH.route) {
+            val searchViewModel = viewModel<SearchViewModel>(
+                factory = SearchViewModel.getViewModelFactory()
+            )
+
             SearchScreen(
                 innerPadding = innerPadding,
+                viewModel = searchViewModel,
                 onBackClick = { navController.popBackStack() }
             )
         }
