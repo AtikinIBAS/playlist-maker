@@ -16,4 +16,5 @@
     <string name="search_icon_content_description">Начать поиск</string>
     <string name="clear_search_content_description">Очистить поисковый запрос</string>
     <string name="back_button_content_description">Вернуться назад</string>
+    <string name="track_title">Детали трека</string>
 </resources>
