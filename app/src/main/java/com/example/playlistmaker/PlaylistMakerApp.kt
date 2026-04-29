@@ -19,6 +19,11 @@ class PlaylistMakerApp : Application() {
             .build()
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        Creator.init(database)
+    }
+
     fun provideTracksInteractor(): TracksInteractor {
         return Creator.provideTracksInteractor()
     }

@@ -1,5 +1,6 @@
 package com.example.playlistmaker.creator
 
+import com.example.playlistmaker.data.db.AppDatabase
 import com.example.playlistmaker.data.network.ITunesApiService
 import com.example.playlistmaker.data.repository.PlaylistsRepositoryImpl
 import com.example.playlistmaker.data.repository.SearchHistoryRepositoryImpl
@@ -18,6 +19,7 @@ object Creator {
     private const val ITUNES_BASE_URL = "https://itunes.apple.com/"
     private val storage by lazy { Storage() }
     private val database by lazy { DatabaseMock(storage.getAllTracks()) }
+    private lateinit var appDatabase: AppDatabase
     private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(ITUNES_BASE_URL)
@@ -25,8 +27,14 @@ object Creator {
             .build()
     }
     private val iTunesApiService by lazy { retrofit.create(ITunesApiService::class.java) }
-    private val tracksRepository by lazy { TracksRepositoryImpl(database, iTunesApiService) }
+    private val tracksRepository by lazy { TracksRepositoryImpl(database, iTunesApiService, appDatabase) }
     private val playlistsRepository by lazy { PlaylistsRepositoryImpl(database) }
+
+    fun init(database: AppDatabase) {
+        if (!::appDatabase.isInitialized) {
+            appDatabase = database
+        }
+    }
 
     fun getTracksRepository(): TracksRepository = tracksRepository
 
