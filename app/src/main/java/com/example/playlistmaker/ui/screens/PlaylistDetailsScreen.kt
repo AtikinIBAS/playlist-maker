@@ -25,6 +25,7 @@ fun PlaylistDetailsScreen(
     innerPadding: PaddingValues,
     playlistId: Long,
     navigateBack: () -> Unit,
+    onTrackClick: (Long) -> Unit,
     playlistsViewModel: PlaylistsViewModel = viewModel(
         factory = PlaylistsViewModel.getViewModelFactory()
     )
@@ -70,7 +71,10 @@ fun PlaylistDetailsScreen(
                 .padding(top = 16.dp)
         ) {
             items(playlist.tracks) { track ->
-                TrackListItem(track = track)
+                TrackListItem(
+                    track = track,
+                    onClick = { onTrackClick(track.id) }
+                )
                 HorizontalDivider(thickness = 0.5.dp)
             }
         }

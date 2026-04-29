@@ -26,10 +26,13 @@ class RetrofitNetworkClient(
                         TrackDto(
                             trackName = track.trackName,
                             artistName = track.artistName,
-                            trackTimeMillis = (minutes * 60 + seconds) * 1000
+                            trackTimeMillis = ((minutes * 60) + seconds) * 1000L
                         )
                     }
-                TracksSearchResponse(searchList).apply { resultCode = 200 }
+                TracksSearchResponse(
+                    resultCount = searchList.size,
+                    results = searchList
+                ).apply { resultCode = 200 }
             }
 
             else -> BaseResponse().apply { resultCode = 400 }

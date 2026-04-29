@@ -1,5 +1,6 @@
 package com.example.playlistmaker.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,6 +46,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -117,6 +120,7 @@ fun SearchScreen(
                         IconButton(
                             onClick = {
                                 text = ""
+                                focusManager.clearFocus()
                                 viewModel.clearSearch()
                             }
                         ) {
@@ -172,15 +176,10 @@ fun SearchScreen(
 
                 is SearchState.Success -> {
                     if (state.list.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = stringResource(R.string.search_no_songs_found),
-                                color = Color.Red
-                            )
-                        }
+                        PlaceholderState(
+                            imageRes = R.drawable.ic_music,
+                            message = stringResource(R.string.search_no_songs_found)
+                        )
                     } else {
                         LazyColumn(
                             modifier = Modifier
@@ -199,22 +198,11 @@ fun SearchScreen(
                 }
 
                 is SearchState.Fail -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = stringResource(R.string.search_error_title),
-                                color = Color.Red
-                            )
-                            Text(
-                                text = state.error,
-                                color = Color.Red,
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
+                    PlaceholderState(
+                        imageRes = R.drawable.ic_music,
+                        message = stringResource(R.string.search_server_error),
+                        buttonText = stringResource(R.string.search_retry)
+                    ) { viewModel.retrySearch() }
                 }
             }
         }
@@ -277,6 +265,36 @@ private fun HistoryRequests(
             }
             if (word != historyList.last()) {
                 HorizontalDivider(thickness = 0.5.dp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlaceholderState(
+    imageRes: Int,
+    message: String,
+    buttonText: String? = null,
+    onActionClick: (() -> Unit)? = null
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Image(
+                painter = painterResource(imageRes),
+                contentDescription = null,
+                modifier = Modifier.size(96.dp)
+            )
+            Text(text = message)
+            if (buttonText != null && onActionClick != null) {
+                Button(onClick = onActionClick) {
+                    Text(text = buttonText)
+                }
             }
         }
     }

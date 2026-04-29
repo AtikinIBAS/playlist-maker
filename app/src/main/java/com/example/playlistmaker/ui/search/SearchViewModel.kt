@@ -7,7 +7,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.playlistmaker.creator.Creator
 import com.example.playlistmaker.domain.repository.TracksRepository
-import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +26,7 @@ class SearchViewModel(
     private val searchHistoryRepository = Creator.getSearchHistoryRepository(viewModelScope)
     private val searchQuery = MutableStateFlow("")
     private val _searchScreenState = MutableStateFlow<SearchState>(SearchState.Initial)
+    private var lastFailedQuery: String? = null
     val searchScreenState = _searchScreenState.asStateFlow()
     val historyList = searchHistoryRepository.getHistoryRequests().stateIn(
         scope = viewModelScope,
@@ -54,8 +54,16 @@ class SearchViewModel(
     }
 
     fun clearSearch() {
+        lastFailedQuery = null
         searchQuery.value = ""
         _searchScreenState.update { SearchState.Initial }
+    }
+
+    fun retrySearch() {
+        val failedQuery = lastFailedQuery ?: return
+        viewModelScope.launch {
+            performSearch(failedQuery)
+        }
     }
 
     private suspend fun performSearch(request: String) {
@@ -65,8 +73,10 @@ class SearchViewModel(
                 searchHistoryRepository.addToHistory(request)
                 tracksRepository.searchTracks(expression = request)
             }
+            lastFailedQuery = null
             _searchScreenState.update { SearchState.Success(list = list) }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
+            lastFailedQuery = request
             _searchScreenState.update { SearchState.Fail(error = e.message.toString()) }
         }
     }

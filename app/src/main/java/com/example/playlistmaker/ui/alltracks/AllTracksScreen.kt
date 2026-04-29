@@ -1,16 +1,17 @@
 package com.example.playlistmaker.ui.alltracks
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,10 +29,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +40,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.viewinterop.AndroidView
+import android.widget.ImageView
+import com.bumptech.glide.Glide
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.ui.theme.PlaylistMakerTheme
@@ -161,10 +166,9 @@ fun TrackListItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_music),
-            contentDescription = stringResource(R.string.track_item_content_description, track.trackName),
-            modifier = Modifier.size(48.dp)
+        TrackArtwork(
+            imageUrl = track.image,
+            contentDescription = stringResource(R.string.track_item_content_description, track.trackName)
         )
         Column(
             modifier = Modifier.weight(1f),
@@ -183,6 +187,36 @@ fun TrackListItem(
         Text(
             text = track.trackTime,
             style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+private fun TrackArtwork(
+    imageUrl: String,
+    contentDescription: String
+) {
+    Box(
+        modifier = Modifier
+            .width(60.dp)
+            .aspectRatio(2f / 3f)
+            .clip(RoundedCornerShape(8.dp))
+    ) {
+        AndroidView(
+            factory = { context ->
+                ImageView(context).apply {
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    this.contentDescription = contentDescription
+                }
+            },
+            modifier = Modifier.fillMaxSize(),
+            update = { imageView ->
+                Glide.with(imageView)
+                    .load(imageUrl.ifBlank { null })
+                    .placeholder(R.drawable.ic_music)
+                    .error(R.drawable.ic_music)
+                    .into(imageView)
+            }
         )
     }
 }

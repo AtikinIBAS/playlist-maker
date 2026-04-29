@@ -105,7 +105,10 @@ fun PlaylistHost(
             PlaylistDetailsScreen(
                 innerPadding = innerPadding,
                 playlistId = playlistId,
-                navigateBack = { navController.popBackStack() }
+                navigateBack = { navController.popBackStack() },
+                onTrackClick = { trackId ->
+                    navController.navigate(PlaylistScreen.TRACK_DETAILS.routeWithArg(trackId))
+                }
             )
         }
 

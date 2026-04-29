@@ -3,4 +3,6 @@
     <string name="search_error">Ошибка: %1$s</string>
     <string name="search_no_songs_found">Ничего не найдено</string>
     <string name="search_error_title">Ошибка</string>
+    <string name="search_server_error">Что-то пошло не так</string>
+    <string name="search_retry">Обновить</string>
 </resources>

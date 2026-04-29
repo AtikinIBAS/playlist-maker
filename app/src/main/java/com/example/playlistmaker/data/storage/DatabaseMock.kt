@@ -92,9 +92,18 @@ class DatabaseMock(
     }
 
     fun insertTrack(track: Track) {
+        upsertTrack(track)
+    }
+
+    fun upsertTrack(track: Track) {
         tracks.update { current ->
-            current.map { existing ->
-                if (existing.id == track.id) track else existing
+            val existingIndex = current.indexOfFirst { it.id == track.id }
+            if (existingIndex >= 0) {
+                current.map { existing ->
+                    if (existing.id == track.id) track else existing
+                }
+            } else {
+                current + track
             }
         }
     }
