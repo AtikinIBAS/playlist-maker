@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 class SearchViewModel(
     private val tracksRepository: TracksRepository
 ) : ViewModel() {
-    private val searchHistoryRepository = Creator.getSearchHistoryRepository(viewModelScope)
+    private val searchHistoryRepository = Creator.getSearchHistoryRepository()
     private val searchQuery = MutableStateFlow("")
     private val _searchScreenState = MutableStateFlow<SearchState>(SearchState.Initial)
     private var lastFailedQuery: String? = null

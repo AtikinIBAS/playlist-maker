@@ -4,7 +4,6 @@ import com.example.playlistmaker.data.db.AppDatabase
 import com.example.playlistmaker.data.db.toEntity
 import com.example.playlistmaker.data.db.toTrack
 import com.example.playlistmaker.data.network.ITunesApiService
-import com.example.playlistmaker.data.storage.DatabaseMock
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.domain.repository.TracksRepository
 import kotlinx.coroutines.delay
@@ -13,23 +12,25 @@ import kotlinx.coroutines.flow.map
 import java.io.IOException
 
 class TracksRepositoryImpl(
-    private val database: DatabaseMock,
     private val iTunesApiService: ITunesApiService,
     appDatabase: AppDatabase,
+    private val seedTracks: List<Track>,
 ) : TracksRepository {
     private val dao = appDatabase.tracksDao()
 
     override fun getTrackDetails(trackId: String): String {
-        return database.getAllTracks().find { it.id.toString() == trackId }?.trackName
+        return seedTracks.find { it.id.toString() == trackId }?.trackName
             ?: "Track details for $trackId"
     }
 
     override suspend fun getAllTracks(): List<Track> {
         delay(300)
-        return database.getAllTracks()
+        ensureSeedTracks()
+        return dao.getAllTracks().map { it.toTrack() }
     }
 
     override suspend fun searchTracks(expression: String): List<Track> {
+        ensureSeedTracks()
         val response = iTunesApiService.searchTracks(expression = expression)
 
         if (!response.isSuccessful) {
@@ -60,7 +61,6 @@ class TracksRepositoryImpl(
                 track
             }
             dao.insertTrack(merged.toEntity())
-            database.upsertTrack(merged)
             merged
         }
 
@@ -68,9 +68,7 @@ class TracksRepositoryImpl(
     }
 
     override fun getTrackById(trackId: Long): Flow<Track?> {
-        return dao.getTrackById(trackId).map { entity ->
-            entity?.toTrack() ?: database.getAllTracks().find { it.id == trackId }
-        }
+        return dao.getTrackById(trackId).map { it?.toTrack() }
     }
 
     override fun getTrackByNameAndArtist(track: Track): Flow<Track?> {
@@ -86,25 +84,29 @@ class TracksRepositoryImpl(
     override suspend fun insertTrackToPlaylist(track: Track, playlistId: Long) {
         val updatedTrack = track.copy(playlistId = playlistId)
         dao.insertTrack(updatedTrack.toEntity())
-        database.insertTrack(updatedTrack)
     }
 
     override suspend fun deleteTrackFromPlaylist(track: Track) {
         dao.insertTrack(track.copy(playlistId = 0).toEntity())
-        database.deleteTrackFromPlaylist(track.id)
     }
 
     override suspend fun updateTrackFavoriteStatus(track: Track, isFavorite: Boolean) {
         val updatedTrack = track.copy(favorite = isFavorite)
         dao.insertTrack(updatedTrack.toEntity())
-        database.insertTrack(updatedTrack)
     }
 
     override suspend fun deleteTracksByPlaylistId(playlistId: Long) {
         dao.getTracksByPlaylistId(playlistId).forEach { entity ->
             dao.insertTrack(entity.copy(playlistId = 0))
         }
-        database.deleteTracksByPlaylistId(playlistId)
+    }
+
+    private suspend fun ensureSeedTracks() {
+        val existingIds = dao.getAllTracks().map { it.id }.toSet()
+        val missingTracks = seedTracks.filterNot { it.id in existingIds }
+        if (missingTracks.isNotEmpty()) {
+            dao.insertTracks(missingTracks.map { it.toEntity() })
+        }
     }
 
     private fun formatTrackTime(trackTimeMillis: Long?): String {
