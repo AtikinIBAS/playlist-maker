@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PlaylistMaker">
         <activity
+            android:name=".ui.alltracks.AllTracksActivity"
+            android:exported="false"
+            android:label="@string/all_tracks_title"
+            android:theme="@style/Theme.PlaylistMaker" />
+        <activity
             android:name=".ui.track.TrackActivity"
             android:exported="false"
             android:label="@string/track_title"

@@ -1,0 +1,5 @@
+<resources>
+    <string name="all_tracks_title">Список треков</string>
+    <string name="all_tracks_error">Ошибка: %1$s</string>
+    <string name="track_item_content_description">Трек %1$s</string>
+</resources>
