@@ -18,6 +18,14 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlists WHERE playlist_id = :playlistId LIMIT 1")
     fun getPlaylistById(playlistId: Long): Flow<PlaylistEntity?>
 
+    @Query("UPDATE playlists SET playlist_name = :name, playlist_description = :description, playlist_image_path = :imagePath WHERE playlist_id = :playlistId")
+    suspend fun updatePlaylist(
+        playlistId: Long,
+        name: String,
+        description: String,
+        imagePath: String
+    )
+
     @Query("DELETE FROM playlists WHERE playlist_id = :playlistId")
     suspend fun deletePlaylistById(playlistId: Long)
 }

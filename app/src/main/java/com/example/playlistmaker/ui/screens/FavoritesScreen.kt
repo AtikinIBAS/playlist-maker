@@ -1,5 +1,6 @@
 package com.example.playlistmaker.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.ui.alltracks.TrackListItem
@@ -31,7 +33,7 @@ fun FavoritesScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .padding(horizontal = 20.dp, vertical = 24.dp)
+            .background(MaterialTheme.colorScheme.surface)
     ) {
         ScreenHeader(
             title = stringResource(R.string.favorites_title),
@@ -39,20 +41,20 @@ fun FavoritesScreen(
         )
 
         if (favoriteList.isEmpty()) {
-            EmptyState(
+            FavoritesEmptyState(
                 text = stringResource(R.string.favorites_empty),
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 12.dp)
+                    .padding(top = 120.dp)
             )
         } else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(top = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
-                items(favoriteList) { track ->
+                items(favoriteList, key = { it.id }) { track ->
                     TrackListItem(
                         track = track,
                         onLongClick = { playlistsViewModel.toggleFavorite(track, false) },

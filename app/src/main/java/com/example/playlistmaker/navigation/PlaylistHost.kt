@@ -81,6 +81,7 @@ fun PlaylistHost(
             NewPlaylistScreen(
                 innerPadding = innerPadding,
                 playlistsViewModel = playlistsViewModel,
+                playlistId = null,
                 navigateBack = { navController.popBackStack() }
             )
         }

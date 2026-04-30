@@ -1,12 +1,12 @@
 <resources>
-    <string name="app_name">Playlist Maker</string>
+    <string name="app_name">Playlist maker</string>
     <string name="search_title">Поиск</string>
     <string name="search_placeholder">Поиск</string>
     <string name="media_library_title">Медиатека</string>
     <string name="settings_title">Настройки</string>
     <string name="button_clicked_message">Нажата кнопка "%1$s"</string>
     <string name="share_app_title">Поделиться приложением</string>
-    <string name="contact_developers_title">Написать разработчикам</string>
+    <string name="contact_developers_title">Написать в поддержку</string>
     <string name="user_agreement_title">Пользовательское соглашение</string>
     <string name="share_app_message">Привет! Посмотри приложение Playlist Maker: https://practicum.yandex.ru/android-developer/</string>
     <string name="share_chooser_title">Поделиться приложением</string>

@@ -53,6 +53,15 @@ class PlaylistsRepositoryImpl(
         )
     }
 
+    override suspend fun updatePlaylist(id: Long, name: String, description: String, imagePath: String) {
+        playlistDao.updatePlaylist(
+            playlistId = id,
+            name = name,
+            description = description,
+            imagePath = imagePath
+        )
+    }
+
     override suspend fun deletePlaylistById(id: Long) {
         playlistDao.deletePlaylistById(id)
     }

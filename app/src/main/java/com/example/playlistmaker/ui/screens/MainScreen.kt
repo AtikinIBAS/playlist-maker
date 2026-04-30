@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -17,9 +18,9 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,15 +40,28 @@ fun MainScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppAccent)
-            .padding(innerPadding)
+            .background(MaterialTheme.colorScheme.surface)
     ) {
-        MainTitle(title = stringResource(R.string.app_name))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(164.dp)
+                .background(AppAccent)
+        )
+
+        Text(
+            text = stringResource(R.string.app_name),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(start = 16.dp, top = 12.dp)
+        )
 
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(730.dp)
+                .fillMaxSize()
                 .padding(top = 70.dp),
             color = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)

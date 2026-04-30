@@ -16,19 +16,23 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,7 +45,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.bumptech.glide.Glide
 import com.example.playlistmaker.R
 import com.example.playlistmaker.ui.playlist.PlaylistsViewModel
-import com.example.playlistmaker.ui.theme.AppPrimary
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
@@ -50,13 +53,26 @@ import java.util.UUID
 fun NewPlaylistScreen(
     innerPadding: PaddingValues,
     playlistsViewModel: PlaylistsViewModel,
+    playlistId: Long?,
     navigateBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val playlists by playlistsViewModel.playlists.collectAsState(emptyList())
+    val editingPlaylist = playlistId?.let { id -> playlists.find { it.id == id } }
+
     var playlistName by rememberSaveable { mutableStateOf("") }
     var playlistDescription by rememberSaveable { mutableStateOf("") }
     var playlistImagePath by rememberSaveable { mutableStateOf("") }
-    var selectedImageUri by rememberSaveable { mutableStateOf<String?>(null) }
+    var isInitialized by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(editingPlaylist?.id) {
+        if (playlistId != null && editingPlaylist != null && !isInitialized) {
+            playlistName = editingPlaylist.name
+            playlistDescription = editingPlaylist.description
+            playlistImagePath = editingPlaylist.imagePath
+            isInitialized = true
+        }
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -65,7 +81,6 @@ fun NewPlaylistScreen(
             val savedPath = copyPlaylistImageToInternalStorage(context, uri)
             if (savedPath.isNotBlank()) {
                 playlistImagePath = savedPath
-                selectedImageUri = savedPath
             }
         }
     }
@@ -74,19 +89,21 @@ fun NewPlaylistScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .background(Color.White)
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.Top
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 16.dp)
+            .navigationBarsPadding()
     ) {
         ScreenHeader(
-            title = stringResource(R.string.new_playlist_title),
+            title = stringResource(
+                if (playlistId == null) R.string.new_playlist_title else R.string.edit_playlist_title
+            ),
             onBackClick = navigateBack
         )
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         PlaylistArtworkPicker(
-            imagePath = selectedImageUri,
+            imagePath = playlistImagePath,
             onClick = {
                 imagePickerLauncher.launch(
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -96,58 +113,64 @@ fun NewPlaylistScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        OutlinedTextField(
+        AppPlaylistTextField(
             value = playlistName,
-            onValueChange = { playlistName = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.new_playlist_name)) },
+            label = stringResource(R.string.new_playlist_name),
             singleLine = true,
-            shape = RoundedCornerShape(8.dp)
+            onValueChange = { playlistName = it }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
+        AppPlaylistTextField(
             value = playlistDescription,
-            onValueChange = { playlistDescription = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.new_playlist_description)) },
-            minLines = 4,
-            shape = RoundedCornerShape(8.dp)
+            label = stringResource(R.string.new_playlist_description),
+            singleLine = false,
+            minLines = 2,
+            onValueChange = { playlistDescription = it }
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.weight(1f))
 
         AppActionButton(
-            text = stringResource(R.string.save_playlist),
+            text = stringResource(if (playlistId == null) R.string.create_playlist else R.string.save_playlist),
             enabled = playlistName.isNotBlank(),
             onClick = {
-                playlistsViewModel.createNewPlayList(
-                    namePlaylist = playlistName.trim(),
-                    description = playlistDescription.trim(),
-                    imagePath = playlistImagePath
-                )
+                if (playlistId == null) {
+                    playlistsViewModel.createNewPlayList(
+                        namePlaylist = playlistName.trim(),
+                        description = playlistDescription.trim(),
+                        imagePath = playlistImagePath
+                    )
+                } else {
+                    playlistsViewModel.updatePlaylist(
+                        id = playlistId,
+                        namePlaylist = playlistName.trim(),
+                        description = playlistDescription.trim(),
+                        imagePath = playlistImagePath
+                    )
+                }
                 navigateBack()
             }
         )
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
 @Composable
 private fun PlaylistArtworkPicker(
-    imagePath: String?,
+    imagePath: String,
     onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(312.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFF2F3F5))
+            .height(208.dp)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        if (imagePath.isNullOrBlank()) {
+        if (imagePath.isBlank()) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -155,32 +178,58 @@ private fun PlaylistArtworkPicker(
                 androidx.compose.material3.Icon(
                     imageVector = Icons.Default.AddPhotoAlternate,
                     contentDescription = stringResource(R.string.playlist_pick_cover),
-                    tint = AppPrimary,
-                    modifier = Modifier.size(48.dp)
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = stringResource(R.string.playlist_pick_cover),
-                    color = AppPrimary,
-                    fontWeight = FontWeight.Medium
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(72.dp)
                 )
             }
         } else {
-            AndroidView(
-                factory = { context ->
-                    ImageView(context).apply {
-                        scaleType = ImageView.ScaleType.CENTER_CROP
+            Box(
+                modifier = Modifier
+                    .size(312.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            ) {
+                AndroidView(
+                    factory = { context ->
+                        ImageView(context).apply {
+                            scaleType = ImageView.ScaleType.CENTER_CROP
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                    update = { imageView ->
+                        Glide.with(imageView)
+                            .load(imagePath)
+                            .into(imageView)
                     }
-                },
-                modifier = Modifier.fillMaxSize(),
-                update = { imageView ->
-                    Glide.with(imageView)
-                        .load(imagePath)
-                        .into(imageView)
-                }
-            )
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun AppPlaylistTextField(
+    value: String,
+    label: String,
+    singleLine: Boolean,
+    minLines: Int = 1,
+    onValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier.fillMaxWidth(),
+        textStyle = MaterialTheme.typography.bodyMedium,
+        label = { Text(text = label) },
+        singleLine = singleLine,
+        minLines = minLines,
+        shape = RoundedCornerShape(8.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.tertiary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedLabelColor = MaterialTheme.colorScheme.tertiary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    )
 }
 
 private fun copyPlaylistImageToInternalStorage(context: Context, uri: Uri): String {

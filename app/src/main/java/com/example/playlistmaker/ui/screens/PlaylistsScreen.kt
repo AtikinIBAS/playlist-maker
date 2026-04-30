@@ -1,6 +1,7 @@
 package com.example.playlistmaker.ui.screens
 
 import android.widget.ImageView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,8 +38,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.bumptech.glide.Glide
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Playlist
-import com.example.playlistmaker.ui.theme.AppPrimary
-import com.example.playlistmaker.ui.theme.AppSecondary
 import com.example.playlistmaker.ui.playlist.PlaylistsViewModel
 
 @Composable
@@ -55,11 +54,10 @@ fun PlaylistsScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
+            .background(MaterialTheme.colorScheme.surface)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 24.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
             ScreenHeader(
                 title = stringResource(R.string.playlists_title),
@@ -68,10 +66,11 @@ fun PlaylistsScreen(
 
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .padding(top = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
-                items(playlists) { playlist ->
+                items(playlists, key = { it.id }) { playlist ->
                     PlaylistListItem(
                         playlist = playlist,
                         onClick = { navigateToPlaylist(playlist.id) }
@@ -82,11 +81,11 @@ fun PlaylistsScreen(
 
         FloatingActionButton(
             modifier = Modifier
-                .padding(24.dp)
+                .padding(end = 16.dp, bottom = 24.dp)
                 .align(Alignment.BottomEnd),
             onClick = addNewPlaylist,
             shape = CircleShape,
-            containerColor = AppPrimary.copy(alpha = 0.25f),
+            containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
             contentColor = Color.White,
             elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 0.dp)
         ) {
@@ -118,8 +117,7 @@ fun PlaylistListItem(
             contentDescription = playlist.name
         )
         Column(
-            modifier = Modifier.weight(1f),
-            horizontalAlignment = Alignment.Start
+            modifier = Modifier.weight(1f)
         ) {
             Text(
                 text = playlist.name,
@@ -131,15 +129,12 @@ fun PlaylistListItem(
             )
             Text(
                 text = formatTrackCount(playlist.tracks.size),
-                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Normal),
-                color = AppSecondary
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         if (showChevron) {
-            ChevronMark(
-                modifier = Modifier.padding(end = 4.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            ChevronMark(color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -173,13 +168,24 @@ private fun PlaylistImage(
     }
 }
 
-private fun formatTrackCount(count: Int): String {
+fun formatTrackCount(count: Int): String {
     val mod10 = count % 10
     val mod100 = count % 100
     val suffix = when {
         mod10 == 1 && mod100 != 11 -> "трек"
         mod10 in 2..4 && mod100 !in 12..14 -> "трека"
         else -> "треков"
+    }
+    return "$count $suffix"
+}
+
+fun formatMinuteCount(count: Int): String {
+    val mod10 = count % 10
+    val mod100 = count % 100
+    val suffix = when {
+        mod10 == 1 && mod100 != 11 -> "минута"
+        mod10 in 2..4 && mod100 !in 12..14 -> "минуты"
+        else -> "минут"
     }
     return "$count $suffix"
 }

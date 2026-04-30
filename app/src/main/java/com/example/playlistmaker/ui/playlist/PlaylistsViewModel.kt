@@ -39,6 +39,12 @@ class PlaylistsViewModel(
         }
     }
 
+    fun updatePlaylist(id: Long, namePlaylist: String, description: String, imagePath: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            playlistsRepository.updatePlaylist(id, namePlaylist, description, imagePath)
+        }
+    }
+
     fun insertTrackToPlaylist(track: Track, playlistId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             tracksRepository.insertTrackToPlaylist(track, playlistId)
