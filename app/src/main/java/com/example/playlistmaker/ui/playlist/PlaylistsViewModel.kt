@@ -33,9 +33,9 @@ class PlaylistsViewModel(
         initialValue = emptyList()
     )
 
-    fun createNewPlayList(namePlaylist: String, description: String) {
+    fun createNewPlayList(namePlaylist: String, description: String, imagePath: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            playlistsRepository.addNewPlaylist(namePlaylist, description)
+            playlistsRepository.addNewPlaylist(namePlaylist, description, imagePath)
         }
     }
 

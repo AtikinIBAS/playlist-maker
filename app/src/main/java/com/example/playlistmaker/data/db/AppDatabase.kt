@@ -8,7 +8,7 @@ import com.example.playlistmaker.data.db.entity.PlaylistEntity
 import com.example.playlistmaker.data.db.entity.TrackEntity
 
 @Database(
-    version = 3,
+    version = 4,
     exportSchema = true,
     entities = [TrackEntity::class, PlaylistEntity::class]
 )

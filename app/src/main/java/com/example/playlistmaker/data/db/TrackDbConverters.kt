@@ -34,6 +34,7 @@ fun PlaylistEntity.toPlaylist(tracks: List<Track> = emptyList()): Playlist {
         id = id,
         name = name,
         description = description,
+        imagePath = imagePath,
         tracks = tracks
     )
 }

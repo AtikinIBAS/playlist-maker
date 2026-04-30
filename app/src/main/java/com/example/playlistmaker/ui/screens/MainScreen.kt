@@ -1,80 +1,110 @@
 package com.example.playlistmaker.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.playlistmaker.R
+import com.example.playlistmaker.ui.theme.AppAccent
 import com.example.playlistmaker.ui.theme.PlaylistMakerTheme
 
 @Composable
 fun MainScreen(
     innerPadding: PaddingValues,
+    isDarkTheme: Boolean,
     onSongsClick: () -> Unit,
     onPlaylistsClick: () -> Unit,
     onFavoritesClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(AppAccent)
             .padding(innerPadding)
-            .padding(horizontal = 20.dp, vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = stringResource(R.string.app_name),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.align(Alignment.Start)
-        )
+        MainTitle(title = stringResource(R.string.app_name))
 
-        Spacer(modifier = Modifier.height(28.dp))
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(730.dp)
+                .padding(top = 70.dp),
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
         ) {
-            AppMenuRow(
-                text = stringResource(R.string.songs_title),
-                onClick = onSongsClick
-            )
-            AppMenuRow(
-                text = stringResource(R.string.playlists_title),
-                onClick = onPlaylistsClick
-            )
-            AppMenuRow(
-                text = stringResource(R.string.favorites_title),
-                onClick = onFavoritesClick
-            )
-            AppMenuRow(
-                text = stringResource(R.string.settings_title),
-                onClick = onSettingsClick
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                MainMenuRow(
+                    icon = Icons.Filled.Search,
+                    text = stringResource(R.string.search_title),
+                    onClick = onSongsClick
+                )
+                MainMenuRow(
+                    icon = Icons.Outlined.LibraryMusic,
+                    text = stringResource(R.string.playlists_title),
+                    onClick = onPlaylistsClick
+                )
+                MainMenuRow(
+                    icon = Icons.Filled.FavoriteBorder,
+                    text = stringResource(R.string.favorites_title),
+                    onClick = onFavoritesClick
+                )
+                MainMenuRow(
+                    icon = Icons.Filled.Settings,
+                    text = stringResource(R.string.settings_title),
+                    onClick = onSettingsClick
+                )
+            }
         }
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun MainScreenPreview() {
-    PlaylistMakerTheme {
+private fun MainScreenLightPreview() {
+    PlaylistMakerTheme(darkTheme = false) {
         MainScreen(
             innerPadding = PaddingValues(),
+            isDarkTheme = false,
+            onSongsClick = {},
+            onPlaylistsClick = {},
+            onFavoritesClick = {},
+            onSettingsClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun MainScreenDarkPreview() {
+    PlaylistMakerTheme(darkTheme = true) {
+        MainScreen(
+            innerPadding = PaddingValues(),
+            isDarkTheme = true,
             onSongsClick = {},
             onPlaylistsClick = {},
             onFavoritesClick = {},

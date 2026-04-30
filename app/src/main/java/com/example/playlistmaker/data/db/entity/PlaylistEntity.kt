@@ -13,4 +13,6 @@ data class PlaylistEntity(
     val name: String,
     @ColumnInfo(name = "playlist_description")
     val description: String,
+    @ColumnInfo(name = "playlist_image_path")
+    val imagePath: String = "",
 )

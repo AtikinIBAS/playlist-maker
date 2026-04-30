@@ -6,6 +6,7 @@ import androidx.room.Room
 import com.example.playlistmaker.creator.Creator
 import com.example.playlistmaker.data.db.AppDatabase
 import com.example.playlistmaker.data.preferences.SearchHistoryPreferences
+import com.example.playlistmaker.data.preferences.ThemePreferences
 import com.example.playlistmaker.domain.interactor.TracksInteractor
 import com.example.playlistmaker.domain.repository.PlaylistsRepository
 import com.example.playlistmaker.domain.repository.TracksRepository
@@ -26,6 +27,12 @@ class PlaylistMakerApp : Application() {
             produceFile = { File(filesDir, "search_history.preferences_pb") }
         )
         SearchHistoryPreferences(dataStore)
+    }
+    val themePreferences: ThemePreferences by lazy {
+        val dataStore = PreferenceDataStoreFactory.create(
+            produceFile = { File(filesDir, "theme.preferences_pb") }
+        )
+        ThemePreferences(dataStore)
     }
 
     override fun onCreate() {

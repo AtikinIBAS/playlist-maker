@@ -21,6 +21,8 @@ import com.example.playlistmaker.ui.theme.PlaylistMakerTheme
 fun SettingsScreen(
     innerPadding: PaddingValues,
     developerEmail: String,
+    isDarkTheme: Boolean,
+    onThemeToggle: (Boolean) -> Unit,
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -33,65 +35,83 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .padding(horizontal = 20.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+            .padding(horizontal = 0.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
         ScreenHeader(
             title = stringResource(R.string.settings_title),
             onBackClick = onBackClick
         )
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            AppMenuRow(
-                text = stringResource(R.string.share_app_title),
-                onClick = {
-                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, shareMessage)
-                    }
-                    context.startActivity(
-                        Intent.createChooser(
-                            shareIntent,
-                            context.getString(R.string.share_chooser_title)
-                        )
-                    )
-                }
-            )
+        ThemeToggleRow(
+            text = stringResource(R.string.dark_theme_title),
+            checked = isDarkTheme,
+            onCheckedChange = onThemeToggle
+        )
 
-            AppMenuRow(
-                text = stringResource(R.string.contact_developers_title),
-                onClick = {
-                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                        data = "mailto:".toUri()
-                        putExtra(Intent.EXTRA_EMAIL, arrayOf(developerEmail))
-                        putExtra(Intent.EXTRA_SUBJECT, emailSubject)
-                        putExtra(Intent.EXTRA_TEXT, emailBody)
-                    }
-                    context.startActivity(emailIntent)
+        SettingsActionRow(
+            text = stringResource(R.string.share_app_title),
+            onClick = {
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, shareMessage)
                 }
-            )
-
-            AppMenuRow(
-                text = stringResource(R.string.user_agreement_title),
-                onClick = {
-                    context.startActivity(
-                        Intent(Intent.ACTION_VIEW, Uri.parse(agreementUrl))
+                context.startActivity(
+                    Intent.createChooser(
+                        shareIntent,
+                        context.getString(R.string.share_chooser_title)
                     )
+                )
+            }
+        )
+
+        SettingsActionRow(
+            text = stringResource(R.string.contact_developers_title),
+            onClick = {
+                val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = "mailto:".toUri()
+                    putExtra(Intent.EXTRA_EMAIL, arrayOf(developerEmail))
+                    putExtra(Intent.EXTRA_SUBJECT, emailSubject)
+                    putExtra(Intent.EXTRA_TEXT, emailBody)
                 }
-            )
-        }
+                context.startActivity(emailIntent)
+            }
+        )
+
+        SettingsActionRow(
+            text = stringResource(R.string.user_agreement_title),
+            onClick = {
+                context.startActivity(
+                    Intent(Intent.ACTION_VIEW, Uri.parse(agreementUrl))
+                )
+            }
+        )
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun SettingsScreenPreview() {
-    PlaylistMakerTheme {
+private fun SettingsScreenLightPreview() {
+    PlaylistMakerTheme(darkTheme = false) {
         SettingsScreen(
             innerPadding = PaddingValues(),
             developerEmail = "pochta_for_yandex@yandex.ru",
+            isDarkTheme = false,
+            onThemeToggle = {},
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun SettingsScreenDarkPreview() {
+    PlaylistMakerTheme(darkTheme = true) {
+        SettingsScreen(
+            innerPadding = PaddingValues(),
+            developerEmail = "pochta_for_yandex@yandex.ru",
+            isDarkTheme = true,
+            onThemeToggle = {},
             onBackClick = {}
         )
     }

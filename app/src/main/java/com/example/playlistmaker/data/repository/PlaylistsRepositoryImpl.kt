@@ -43,11 +43,12 @@ class PlaylistsRepositoryImpl(
         }
     }
 
-    override suspend fun addNewPlaylist(name: String, description: String) {
+    override suspend fun addNewPlaylist(name: String, description: String, imagePath: String) {
         playlistDao.insertPlaylist(
             PlaylistEntity(
                 name = name,
-                description = description
+                description = description,
+                imagePath = imagePath
             )
         )
     }

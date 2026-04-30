@@ -23,7 +23,9 @@ import com.example.playlistmaker.ui.search.SearchViewModel
 @Composable
 fun PlaylistHost(
     navController: NavHostController,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    isDarkTheme: Boolean,
+    onThemeToggle: (Boolean) -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -32,6 +34,7 @@ fun PlaylistHost(
         composable(PlaylistScreen.MAIN.route) {
             MainScreen(
                 innerPadding = innerPadding,
+                isDarkTheme = isDarkTheme,
                 onSongsClick = { navigateTo(navController, PlaylistScreen.SONGS) },
                 onPlaylistsClick = { navigateTo(navController, PlaylistScreen.PLAYLISTS) },
                 onFavoritesClick = { navigateTo(navController, PlaylistScreen.FAVORITES) },
@@ -128,7 +131,9 @@ fun PlaylistHost(
             SettingsScreen(
                 innerPadding = innerPadding,
                 developerEmail = "pochta_for_yandex@yandex.ru",
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                isDarkTheme = isDarkTheme,
+                onThemeToggle = onThemeToggle
             )
         }
     }
