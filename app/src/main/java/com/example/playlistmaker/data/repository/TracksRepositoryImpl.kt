@@ -87,7 +87,12 @@ class TracksRepositoryImpl(
     }
 
     override suspend fun deleteTrackFromPlaylist(track: Track) {
-        dao.insertTrack(track.copy(playlistId = 0).toEntity())
+        val updatedTrack = track.copy(playlistId = 0)
+        if (updatedTrack.favorite) {
+            dao.insertTrack(updatedTrack.toEntity())
+        } else {
+            dao.deleteTrackById(track.id)
+        }
     }
 
     override suspend fun updateTrackFavoriteStatus(track: Track, isFavorite: Boolean) {
