@@ -1,5 +1,6 @@
 package com.example.playlistmaker.data.db
 
+import com.example.playlistmaker.data.db.entity.FavoriteTrackEntity
 import com.example.playlistmaker.data.db.entity.PlaylistEntity
 import com.example.playlistmaker.data.db.entity.TrackEntity
 import com.example.playlistmaker.domain.model.Playlist
@@ -26,6 +27,27 @@ fun Track.toEntity(): TrackEntity {
         image = image,
         favorite = favorite,
         playlistId = playlistId
+    )
+}
+
+fun FavoriteTrackEntity.toTrack(): Track {
+    return Track(
+        id = id,
+        trackName = trackName,
+        artistName = artistName,
+        trackTime = trackTime,
+        image = image,
+        favorite = true
+    )
+}
+
+fun Track.toFavoriteEntity(): FavoriteTrackEntity {
+    return FavoriteTrackEntity(
+        id = id,
+        trackName = trackName,
+        artistName = artistName,
+        trackTime = trackTime,
+        image = image
     )
 }
 

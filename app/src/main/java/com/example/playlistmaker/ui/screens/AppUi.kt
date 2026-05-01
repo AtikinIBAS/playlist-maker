@@ -2,6 +2,7 @@ package com.example.playlistmaker.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,10 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.SentimentDissatisfied
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Share
@@ -37,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.playlistmaker.R
@@ -261,35 +264,37 @@ fun FavoritesEmptyState(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier.size(120.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.MusicNote,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(96.dp)
-                )
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .padding(top = 8.dp)
-                        .background(Color(0xFFFCD452), RoundedCornerShape(22.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = ":(",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
-                    )
-                }
-            }
+            SimpleSadPlaceholderIllustration()
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = text,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.onSurface
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+fun SimpleSadPlaceholderIllustration(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier.size(120.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(88.dp)
+                .background(Color(0xFFFCD452), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.SentimentDissatisfied,
+                contentDescription = null,
+                tint = Color(0xFF1A1B22),
+                modifier = Modifier.size(54.dp)
             )
         }
     }
@@ -300,8 +305,8 @@ fun MetaText(primary: String, duration: String) {
     Text(
         text = "$primary \u2022 $duration",
         style = MaterialTheme.typography.bodySmall.copy(
-            fontSize = 11.sp,
-            lineHeight = 13.sp
+            fontSize = 13.sp,
+            lineHeight = 15.sp
         ),
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )

@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bumptech.glide.Glide
@@ -95,7 +96,11 @@ fun TrackDetailsScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = currentTrack.trackName,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                        lineHeight = 28.sp
+                    ),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -103,7 +108,11 @@ fun TrackDetailsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = currentTrack.artistName,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 16.sp,
+                        lineHeight = 18.sp
+                    ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(46.dp))
@@ -128,7 +137,11 @@ fun TrackDetailsScreen(
                         Spacer(modifier = Modifier.height(22.dp))
                         Text(
                             text = stringResource(R.string.track_duration_label),
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Normal),
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 15.sp,
+                                lineHeight = 17.sp
+                            ),
                             color = AppSecondary,
                             textAlign = TextAlign.Center
                         )
@@ -149,7 +162,11 @@ fun TrackDetailsScreen(
                         Spacer(modifier = Modifier.height(22.dp))
                         Text(
                             text = currentTrack.trackTime,
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Normal),
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 15.sp,
+                                lineHeight = 17.sp
+                            ),
                             color = MaterialTheme.colorScheme.onSurface,
                             textAlign = TextAlign.Center
                         )

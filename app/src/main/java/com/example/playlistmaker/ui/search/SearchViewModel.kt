@@ -8,18 +8,14 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.playlistmaker.creator.Creator
 import com.example.playlistmaker.domain.repository.TracksRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-@OptIn(FlowPreview::class)
 class SearchViewModel(
     private val tracksRepository: TracksRepository
 ) : ViewModel() {
@@ -27,6 +23,7 @@ class SearchViewModel(
     private val searchQuery = MutableStateFlow("")
     private val _searchScreenState = MutableStateFlow<SearchState>(SearchState.Initial)
     private var lastFailedQuery: String? = null
+
     val searchScreenState = _searchScreenState.asStateFlow()
     val historyList = searchHistoryRepository.getHistoryRequests().stateIn(
         scope = viewModelScope,
@@ -34,23 +31,21 @@ class SearchViewModel(
         initialValue = emptyList()
     )
 
-    init {
-        viewModelScope.launch {
-            searchQuery
-                .debounce(1000)
-                .distinctUntilChanged()
-                .collect { query ->
-                    if (query.isBlank()) {
-                        _searchScreenState.update { SearchState.Initial }
-                    } else {
-                        performSearch(query.trim())
-                    }
-                }
-        }
-    }
-
     fun updateQuery(query: String) {
         searchQuery.value = query
+    }
+
+    fun searchNow(query: String = searchQuery.value) {
+        val normalizedQuery = query.trim()
+        searchQuery.value = query
+        if (normalizedQuery.isBlank()) {
+            lastFailedQuery = null
+            _searchScreenState.update { SearchState.Initial }
+            return
+        }
+        viewModelScope.launch {
+            performSearch(normalizedQuery)
+        }
     }
 
     fun clearSearch() {

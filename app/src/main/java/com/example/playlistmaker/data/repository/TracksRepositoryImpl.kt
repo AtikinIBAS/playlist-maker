@@ -2,21 +2,25 @@ package com.example.playlistmaker.data.repository
 
 import com.example.playlistmaker.data.db.AppDatabase
 import com.example.playlistmaker.data.db.toEntity
+import com.example.playlistmaker.data.db.toFavoriteEntity
 import com.example.playlistmaker.data.db.toTrack
-import com.example.playlistmaker.data.network.ITunesApiService
+import com.example.playlistmaker.data.dto.TracksSearchRequest
+import com.example.playlistmaker.data.dto.TracksSearchResponse
 import com.example.playlistmaker.domain.model.Track
+import com.example.playlistmaker.domain.network.NetworkClient
 import com.example.playlistmaker.domain.repository.TracksRepository
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 
 class TracksRepositoryImpl(
-    private val iTunesApiService: ITunesApiService,
+    private val networkClient: NetworkClient,
     appDatabase: AppDatabase,
     private val seedTracks: List<Track>,
 ) : TracksRepository {
     private val dao = appDatabase.tracksDao()
+    private val favoriteTracksDao = appDatabase.favoriteTracksDao()
 
     override fun getTrackDetails(trackId: String): String {
         return seedTracks.find { it.id.toString() == trackId }?.trackName
@@ -24,21 +28,16 @@ class TracksRepositoryImpl(
     }
 
     override suspend fun getAllTracks(): List<Track> {
-        delay(300)
-        ensureSeedTracks()
         return dao.getAllTracks().map { it.toTrack() }
     }
 
     override suspend fun searchTracks(expression: String): List<Track> {
-        ensureSeedTracks()
-        val response = iTunesApiService.searchTracks(expression = expression)
-
-        if (!response.isSuccessful) {
-            throw IOException(response.code().toString())
+        val response = networkClient.doRequest(TracksSearchRequest(expression))
+        if (response.resultCode != 200 || response !is TracksSearchResponse) {
+            throw IOException(response.resultCode.toString())
         }
 
-        val tracks = response.body()
-            ?.results
+        val tracks = response.results
             .orEmpty()
             .map { dto ->
                 Track(
@@ -51,11 +50,12 @@ class TracksRepositoryImpl(
             }
 
         val mergedTracks = tracks.map { track ->
-            val existing = dao.findTrackById(track.id)?.toTrack()
-            val merged = if (existing != null) {
+            val playlistTrack = dao.findTrackById(track.id)?.toTrack()
+            val favoriteTrack = favoriteTracksDao.findTrackById(track.id)?.toTrack()
+            val merged = if (playlistTrack != null || favoriteTrack != null) {
                 track.copy(
-                    favorite = existing.favorite,
-                    playlistId = existing.playlistId
+                    favorite = favoriteTrack != null,
+                    playlistId = playlistTrack?.playlistId ?: 0
                 )
             } else {
                 track
@@ -68,15 +68,34 @@ class TracksRepositoryImpl(
     }
 
     override fun getTrackById(trackId: Long): Flow<Track?> {
-        return dao.getTrackById(trackId).map { it?.toTrack() }
+        return combine(
+            dao.getTrackById(trackId),
+            favoriteTracksDao.getTrackById(trackId)
+        ) { trackEntity, favoriteEntity ->
+            val baseTrack = trackEntity?.toTrack() ?: favoriteEntity?.toTrack()
+            baseTrack?.copy(
+                favorite = favoriteEntity != null,
+                playlistId = trackEntity?.playlistId ?: 0
+            )
+        }
     }
 
     override fun getTrackByNameAndArtist(track: Track): Flow<Track?> {
-        return dao.getTrackByNameAndArtist(track.trackName, track.artistName).map { it?.toTrack() }
+        return combine(
+            dao.getTrackByNameAndArtist(track.trackName, track.artistName),
+            favoriteTracksDao.getFavoriteTracks()
+        ) { trackEntity, favorites ->
+            val favoriteEntity = favorites.firstOrNull { it.id == track.id }
+            val baseTrack = trackEntity?.toTrack() ?: favoriteEntity?.toTrack()
+            baseTrack?.copy(
+                favorite = favoriteEntity != null,
+                playlistId = trackEntity?.playlistId ?: 0
+            )
+        }
     }
 
     override fun getFavoriteTracks(): Flow<List<Track>> {
-        return dao.getFavoriteTracks().map { entities ->
+        return favoriteTracksDao.getFavoriteTracks().map { entities ->
             entities.map { it.toTrack() }
         }
     }
@@ -87,31 +106,23 @@ class TracksRepositoryImpl(
     }
 
     override suspend fun deleteTrackFromPlaylist(track: Track) {
-        val updatedTrack = track.copy(playlistId = 0)
-        if (updatedTrack.favorite) {
-            dao.insertTrack(updatedTrack.toEntity())
-        } else {
-            dao.deleteTrackById(track.id)
-        }
+        dao.deleteTrackById(track.id)
     }
 
     override suspend fun updateTrackFavoriteStatus(track: Track, isFavorite: Boolean) {
-        val updatedTrack = track.copy(favorite = isFavorite)
-        dao.insertTrack(updatedTrack.toEntity())
+        if (isFavorite) {
+            favoriteTracksDao.insertTrack(track.copy(favorite = true).toFavoriteEntity())
+        } else {
+            favoriteTracksDao.deleteTrackById(track.id)
+        }
+
+        dao.findTrackById(track.id)?.let { existingTrack ->
+            dao.insertTrack(existingTrack.copy(favorite = isFavorite))
+        }
     }
 
     override suspend fun deleteTracksByPlaylistId(playlistId: Long) {
-        dao.getTracksByPlaylistId(playlistId).forEach { entity ->
-            dao.insertTrack(entity.copy(playlistId = 0))
-        }
-    }
-
-    private suspend fun ensureSeedTracks() {
-        val existingIds = dao.getAllTracks().map { it.id }.toSet()
-        val missingTracks = seedTracks.filterNot { it.id in existingIds }
-        if (missingTracks.isNotEmpty()) {
-            dao.insertTracks(missingTracks.map { it.toEntity() })
-        }
+        dao.getTracksByPlaylistId(playlistId).forEach { entity -> dao.deleteTrackById(entity.id) }
     }
 
     private fun formatTrackTime(trackTimeMillis: Long?): String {

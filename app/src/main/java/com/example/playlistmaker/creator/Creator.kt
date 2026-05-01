@@ -2,6 +2,7 @@ package com.example.playlistmaker.creator
 
 import com.example.playlistmaker.data.db.AppDatabase
 import com.example.playlistmaker.data.network.ITunesApiService
+import com.example.playlistmaker.data.network.RetrofitNetworkClient
 import com.example.playlistmaker.data.preferences.SearchHistoryPreferences
 import com.example.playlistmaker.data.repository.PlaylistsRepositoryImpl
 import com.example.playlistmaker.data.repository.SearchHistoryRepositoryImpl
@@ -26,9 +27,10 @@ object Creator {
             .build()
     }
     private val iTunesApiService by lazy { retrofit.create(ITunesApiService::class.java) }
+    private val networkClient by lazy { RetrofitNetworkClient(iTunesApiService, storage) }
     private val tracksRepository by lazy {
         TracksRepositoryImpl(
-            iTunesApiService = iTunesApiService,
+            networkClient = networkClient,
             appDatabase = appDatabase,
             seedTracks = storage.getAllTracks()
         )

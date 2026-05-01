@@ -23,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SentimentDissatisfied
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -33,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +41,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -80,10 +80,6 @@ fun SearchScreen(
     var text by rememberSaveable { mutableStateOf("") }
     var isFocused by remember { mutableStateOf(false) }
 
-    LaunchedEffect(text) {
-        viewModel.updateQuery(text)
-    }
-
     val showHistory = isFocused && text.isEmpty() && historyList.isNotEmpty()
 
     Column(
@@ -100,8 +96,15 @@ fun SearchScreen(
         SearchField(
             value = text,
             showAttachedContent = showHistory,
-            onValueChange = { text = it },
+            onValueChange = {
+                text = it
+                viewModel.updateQuery(it)
+            },
             onFocusChanged = { isFocused = it },
+            onSearchClick = {
+                isFocused = false
+                viewModel.searchNow(text)
+            },
             onClearClick = {
                 text = ""
                 viewModel.clearSearch()
@@ -115,6 +118,8 @@ fun SearchScreen(
                     onClick = { query ->
                         text = query
                         isFocused = false
+                        viewModel.updateQuery(query)
+                        viewModel.searchNow(query)
                     }
                 )
             }
@@ -131,8 +136,7 @@ fun SearchScreen(
             screenState is SearchState.Success && (screenState as SearchState.Success).list.isNotEmpty() -> {
                 val tracks = (screenState as SearchState.Success).list
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 12.dp)
                 ) {
                     items(
@@ -175,11 +179,13 @@ private fun SearchField(
     showAttachedContent: Boolean,
     onValueChange: (String) -> Unit,
     onFocusChanged: (Boolean) -> Unit,
+    onSearchClick: () -> Unit,
     onClearClick: () -> Unit
 ) {
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val fieldColor = if (isDarkTheme) Color.White else Color(0xFFE1E4EA)
     val contentColor = AppPrimary
+    val focusRequester = remember { FocusRequester() }
     val shape = RoundedCornerShape(
         topStart = 8.dp,
         topEnd = 8.dp,
@@ -201,18 +207,26 @@ private fun SearchField(
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Filled.Search,
-                contentDescription = stringResource(R.string.search_icon_content_description),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable(onClick = onSearchClick),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = stringResource(R.string.search_icon_content_description),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
             Spacer(modifier = Modifier.width(8.dp))
             BasicTextField(
                 value = value,
                 onValueChange = onValueChange,
                 modifier = Modifier
                     .weight(1f)
+                    .focusRequester(focusRequester)
                     .onFocusChanged { onFocusChanged(it.isFocused) }
                     .padding(vertical = 8.dp),
                 singleLine = true,
@@ -241,7 +255,11 @@ private fun SearchField(
             )
             if (value.isNotEmpty()) {
                 IconButton(
-                    onClick = onClearClick,
+                    onClick = {
+                        onClearClick()
+                        onFocusChanged(true)
+                        focusRequester.requestFocus()
+                    },
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
@@ -337,7 +355,7 @@ private fun SearchPlaceholder(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     lineHeight = 22.sp
                 ),
                 color = MaterialTheme.colorScheme.onSurface,
@@ -368,31 +386,27 @@ private fun SearchPlaceholder(
 
 @Composable
 private fun SearchPlaceholderIllustration(type: SearchPlaceholderType) {
-    val accentColor = when (type) {
-        SearchPlaceholderType.NoResults -> Color(0xFFFCD452)
-        SearchPlaceholderType.ConnectionError -> AppAccent
-    }
-
     Box(
         modifier = Modifier.size(120.dp),
         contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .size(88.dp)
-                .clip(RoundedCornerShape(44.dp))
-                .background(accentColor),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = when (type) {
-                    SearchPlaceholderType.NoResults -> Icons.Filled.SentimentDissatisfied
-                    SearchPlaceholderType.ConnectionError -> Icons.Filled.WifiOff
-                },
-                contentDescription = null,
-                tint = if (type == SearchPlaceholderType.NoResults) AppPrimary else Color.White,
-                modifier = Modifier.size(52.dp)
-            )
+        if (type == SearchPlaceholderType.NoResults) {
+            SimpleSadPlaceholderIllustration()
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(88.dp)
+                    .clip(RoundedCornerShape(44.dp))
+                    .background(AppAccent),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.WifiOff,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(52.dp)
+                )
+            }
         }
     }
 }

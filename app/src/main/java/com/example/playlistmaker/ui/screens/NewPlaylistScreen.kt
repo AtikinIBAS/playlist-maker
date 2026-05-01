@@ -1,10 +1,13 @@
 package com.example.playlistmaker.ui.screens
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.net.Uri
+import android.widget.Toast
 import android.widget.ImageView
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,21 +30,18 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.example.playlistmaker.R
 import com.example.playlistmaker.ui.playlist.PlaylistsViewModel
@@ -53,35 +53,35 @@ import java.util.UUID
 fun NewPlaylistScreen(
     innerPadding: PaddingValues,
     playlistsViewModel: PlaylistsViewModel,
-    playlistId: Long?,
     navigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val playlists by playlistsViewModel.playlists.collectAsState(emptyList())
-    val editingPlaylist = playlistId?.let { id -> playlists.find { it.id == id } }
 
     var playlistName by rememberSaveable { mutableStateOf("") }
     var playlistDescription by rememberSaveable { mutableStateOf("") }
     var playlistImagePath by rememberSaveable { mutableStateOf("") }
-    var isInitialized by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(editingPlaylist?.id) {
-        if (playlistId != null && editingPlaylist != null && !isInitialized) {
-            playlistName = editingPlaylist.name
-            playlistDescription = editingPlaylist.description
-            playlistImagePath = editingPlaylist.imagePath
-            isInitialized = true
-        }
-    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
+        contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
             val savedPath = copyPlaylistImageToInternalStorage(context, uri)
             if (savedPath.isNotBlank()) {
                 playlistImagePath = savedPath
             }
+        }
+    }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            imagePickerLauncher.launch("image/*")
+        } else {
+            Toast.makeText(
+                context,
+                context.getString(R.string.permission_required),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -94,9 +94,7 @@ fun NewPlaylistScreen(
             .navigationBarsPadding()
     ) {
         ScreenHeader(
-            title = stringResource(
-                if (playlistId == null) R.string.new_playlist_title else R.string.edit_playlist_title
-            ),
+            title = stringResource(R.string.new_playlist_title),
             onBackClick = navigateBack
         )
 
@@ -105,9 +103,20 @@ fun NewPlaylistScreen(
         PlaylistArtworkPicker(
             imagePath = playlistImagePath,
             onClick = {
-                imagePickerLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    imagePickerLauncher.launch("image/*")
+                } else {
+                    when {
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                        ) == PackageManager.PERMISSION_GRANTED -> {
+                            imagePickerLauncher.launch("image/*")
+                        }
+
+                        else -> permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    }
+                }
             }
         )
 
@@ -133,23 +142,14 @@ fun NewPlaylistScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         AppActionButton(
-            text = stringResource(if (playlistId == null) R.string.create_playlist else R.string.save_playlist),
+            text = stringResource(R.string.create_playlist),
             enabled = playlistName.isNotBlank(),
             onClick = {
-                if (playlistId == null) {
-                    playlistsViewModel.createNewPlayList(
-                        namePlaylist = playlistName.trim(),
-                        description = playlistDescription.trim(),
-                        imagePath = playlistImagePath
-                    )
-                } else {
-                    playlistsViewModel.updatePlaylist(
-                        id = playlistId,
-                        namePlaylist = playlistName.trim(),
-                        description = playlistDescription.trim(),
-                        imagePath = playlistImagePath
-                    )
-                }
+                playlistsViewModel.createNewPlayList(
+                    namePlaylist = playlistName.trim(),
+                    description = playlistDescription.trim(),
+                    imagePath = playlistImagePath
+                )
                 navigateBack()
             }
         )

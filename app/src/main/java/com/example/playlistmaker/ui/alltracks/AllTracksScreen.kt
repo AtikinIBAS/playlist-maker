@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
@@ -179,7 +180,10 @@ fun TrackListItem(
             Text(
                 text = track.trackName,
                 fontWeight = FontWeight.SemiBold,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 18.sp,
+                    lineHeight = 21.sp
+                ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
