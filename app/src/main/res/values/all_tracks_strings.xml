@@ -2,4 +2,7 @@
     <string name="all_tracks_title">Список треков</string>
     <string name="all_tracks_error">Ошибка: %1$s</string>
     <string name="track_item_content_description">Трек %1$s</string>
+    <string name="all_tracks_fab_content_description">Добавить</string>
+    <string name="all_tracks_bottom_sheet_title">Это панель BottomSheet</string>
+    <string name="all_tracks_bottom_sheet_icon_description">Иконка панели</string>
 </resources>

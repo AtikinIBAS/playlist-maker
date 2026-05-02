@@ -1,67 +1,20 @@
 package com.example.playlistmaker.creator
 
-import com.example.playlistmaker.data.dto.TrackDto
+import com.example.playlistmaker.domain.model.Track
 
 class Storage {
     private val listTracks = listOf(
-        TrackDto(
-            trackName = "Владивосток 2000",
-            artistName = "Мумий Тролль",
-            trackTimeMillis = 158000
-        ),
-        TrackDto(
-            trackName = "Группа крови",
-            artistName = "Кино",
-            trackTimeMillis = 283000
-        ),
-        TrackDto(
-            trackName = "Не смотри назад",
-            artistName = "Ария",
-            trackTimeMillis = 312000
-        ),
-        TrackDto(
-            trackName = "Звезда по имени Солнце",
-            artistName = "Кино",
-            trackTimeMillis = 225000
-        ),
-        TrackDto(
-            trackName = "Лондон",
-            artistName = "Аквариум",
-            trackTimeMillis = 272000
-        ),
-        TrackDto(
-            trackName = "На заре",
-            artistName = "Альянс",
-            trackTimeMillis = 230000
-        ),
-        TrackDto(
-            trackName = "Перемен",
-            artistName = "Кино",
-            trackTimeMillis = 296000
-        ),
-        TrackDto(
-            trackName = "Розовый фламинго",
-            artistName = "Сплин",
-            trackTimeMillis = 195000
-        ),
-        TrackDto(
-            trackName = "Танцевать",
-            artistName = "Мельница",
-            trackTimeMillis = 222000
-        ),
-        TrackDto(
-            trackName = "Чёрный бумер",
-            artistName = "Серёга",
-            trackTimeMillis = 241000
-        )
+        Track(id = 1, trackName = "Владивосток 2000", artistName = "Мумий Тролль", trackTime = "2:38"),
+        Track(id = 2, trackName = "Группа крови", artistName = "Кино", trackTime = "4:43"),
+        Track(id = 3, trackName = "Не смотри назад", artistName = "Ария", trackTime = "5:12"),
+        Track(id = 4, trackName = "Звезда по имени Солнце", artistName = "Кино", trackTime = "3:45"),
+        Track(id = 5, trackName = "Лондон", artistName = "Аквариум", trackTime = "4:32"),
+        Track(id = 6, trackName = "На заре", artistName = "Альянс", trackTime = "3:50"),
+        Track(id = 7, trackName = "Перемен", artistName = "Кино", trackTime = "4:56"),
+        Track(id = 8, trackName = "Розовый фламинго", artistName = "Сплин", trackTime = "3:15"),
+        Track(id = 9, trackName = "Танцевать", artistName = "Мельница", trackTime = "3:42"),
+        Track(id = 10, trackName = "Чёрный бумер", artistName = "Серёга", trackTime = "4:01")
     )
 
-    fun search(request: String): List<TrackDto> {
-        val normalizedRequest = request.lowercase()
-
-        return listTracks.filter {
-            it.trackName.lowercase().contains(normalizedRequest) ||
-                it.artistName.lowercase().contains(normalizedRequest)
-        }
-    }
+    fun getAllTracks(): List<Track> = listTracks
 }
